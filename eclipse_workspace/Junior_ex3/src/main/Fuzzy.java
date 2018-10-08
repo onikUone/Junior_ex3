@@ -10,6 +10,40 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Fuzzy {
+	//初期値パラメータ
+	int n;	//学習データの属性数;次元数
+	int classNumber;	//学習データのクラス数
+	int m;	//学習データのパターン数
+	double[][] x;	//学習データの入力パターン
+	int[] classof_x;	//学習パターンの教師ラベル
+	int K = 3;	//ファジィ集合分割数;
+	String inputPath;	//読み込みパス
+	String outputPath;	//書き出しパス
+
+	double temp1;
+	double temp2;
+	double comp;
+	int comp_flg;
+	double[][][] ruleFit;	//ルール条件部
+	int[][] ruleResult;		//ルール結論部クラス
+	double[][][] trust;	//ルール信頼度
+	double[][] ruleWeight;	//ルール重み
+
+	int h = 500;	//テストパターン刻み幅
+	double[][] test_X;	//テストパターン
+	int[] test_Class;	//テストパターン_識別結果
+	double[][][] testFit;	//テストパターン_適合度
+
+	double recogRate;	//識別率
+	int ruleNumber;	//ルール数
+	int ruleLength;	//総ルール長
+
+	//constructor
+	Fuzzy(String inputPath, String outputPath){
+		this.inputPath = inputPath;
+		this.outputPath = outputPath;
+
+	}
 
 //ファイル読み込みメソッド
 	public static double[][] readFile(String path) throws IOException{
@@ -45,22 +79,18 @@ public class Fuzzy {
 		}
 	}
 
-//mainメソッド
-	public static void fuzzy(String inputPath) throws IOException {
-	//初期パラメータ
-		int n;	//学習データの属性数;次元数
-		int classNumber;	//学習データのクラス数
-		int m;	//学習データのパターン数
-		double[][] x;	//学習データの入力パターン
-		int[] classof_x;	//学習パターンの教師ラベル
-		int K = 3;	//ファジィ集合分割数;
-		//境界点書き込みPath
-		String borderPath = "/Users/Uone/IDrive/OPU/研究フォルダ/Junior_ex3/eclipse_workspace/Junior_ex3/src/border.dat";	//Mac(ノートPC)環境
-
+//fuzzyメソッド
+/*
+ * Fuzzyインスタンスに指定されているPathにしたがって、
+ * 		Fuzzyルールの生成    (ruleFit → ruleResult)
+ * 		未知パターンの推論
+ * 		境界点の書き出し
+ * 	を行う
+ *
+ * */
+	public void fuzzy() throws IOException {
 	//ファイル読み込み
 		double[][] inputFile = readFile(inputPath);
-
-	//例題1処理
 		m = (int)inputFile[0][0];
 		n = (int)inputFile[0][1];
 		classNumber = (int)inputFile[0][2];
@@ -78,15 +108,10 @@ public class Fuzzy {
 		}
 
 	//Fuzzy Rule 生成
-		double temp1;
-		double temp2;
-		double comp;
-		int comp_flg;
-		double[][][] ruleFit = new double[K+1][K+1][m];	//ルール条件部
-		int[][] ruleResult = new int[K+1][K+1];		//ルール結論部クラス
-		double[][][] trust = new double[K+1][K+1][classNumber];	//ルール信頼度
-		double[][] ruleWeight = new double[K+1][K+1];
-
+		ruleFit = new double[K+1][K+1][m];
+		ruleResult = new int[K+1][K+1];
+		trust = new double[K+1][K+1][classNumber];
+		ruleWeight = new double[K+1][K+1];
 		//適合度計算
 		for(int i=0; i < K+1; i++) {
 			for(int j=0; j < K+1; j++) {
@@ -103,8 +128,6 @@ public class Fuzzy {
 				}
 			}
 		}
-
-
 		//信頼度計算
 		for(int i=0; i < K+1; i++) {
 			for(int j=0; j < K+1; j++) {
@@ -147,27 +170,36 @@ public class Fuzzy {
 				ruleWeight[i][j] -= temp1;
 			}
 		}
-
-		for(int i=0; i<K+1; i++) {
-			for(int j=0;j<K+1;j++) {
-				System.out.println("rule "+ i + " " + j + ": " + ruleResult[i][j] + " " + ruleWeight[i][j]);
+		//ルール数出力
+		ruleNumber = 0;
+		ruleLength = 0;
+		for(int i=0; i < K+1; i++) {
+			for(int j=0; j < K+1; j++) {
+				if(ruleWeight[i][j] > 0) {
+					ruleNumber++;
+					if(i != 0) {
+						ruleLength++;
+					}
+					if(j != 0) {
+						ruleLength++;
+					}
+				}
 			}
 		}
-
+		System.out.println("ruleNumber: "+ruleNumber);
+		System.out.println("ruleLength: "+ruleLength);
 
 	//未知パターン推論
+		test_X = new double[h*h][n];
+		test_Class = new int[h*h];
+		testFit = new double[h*h][K+1][K+1];
 		//テストパターン生成
-		int h = 500;	//テストパターン刻み幅
-		double[][] test_X = new double[h*h][n];
-		int[] test_Class = new int[h*h];
 		for(int i=0; i<h; i++) {
 			for(int j=0; j<h; j++) {//走査方向 : 縦
 				test_X[i*h+j][0] = (double)i/h;
 				test_X[i*h+j][1] = (double)j/h;
 			}
 		}
-		//適合度計算
-		double[][][] testFit = new double[h*h][K+1][K+1];
 		//適合度計算
 		for(int i=0; i < K+1; i++) {
 			for(int j=0; j < K+1; j++) {
@@ -188,7 +220,6 @@ public class Fuzzy {
 				}
 			}
 		}
-
 		//推論クラス決定
 		for(int p=0; p < h*h; p++) {
 			comp_flg = 0;
@@ -214,8 +245,7 @@ public class Fuzzy {
 
 	//境界点書き出し
 		//境界点 書き出し
-		PrintWriter outPrint = new PrintWriter(new BufferedWriter(new FileWriter(borderPath)));
-
+		PrintWriter outPrint = new PrintWriter(new BufferedWriter(new FileWriter(outputPath)));
 		int comClass = -1;
 		for(int i=0; i<h; i++) {
 			for(int j=0; j<h; j++) {
@@ -233,7 +263,6 @@ public class Fuzzy {
 			}
 		}
 		outPrint.close();
-
 	}
 
 }
