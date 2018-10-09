@@ -1,5 +1,6 @@
 package main;
 
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Fuzzy {
-	//初期値パラメータ
+//初期値パラメータ
 	int n;	//学習データの属性数;次元数
 	int classNumber;	//学習データのクラス数
 	int m;	//学習データのパターン数
@@ -20,25 +21,15 @@ public class Fuzzy {
 	String inputPath;	//読み込みパス
 	String outputPath;	//書き出しパス
 
-	double temp1;
-	double temp2;
-	double comp;
-	int comp_flg;
-	double[][][] ruleFit;	//ルール条件部
-	int[][] ruleResult;		//ルール結論部クラス
-	double[][][] trust;	//ルール信頼度
-	double[][] ruleWeight;	//ルール重み
+		// Fuzzy rule 関係
+	int[] result;	// ルール結論部クラス	(result[全ルール数])
+	double[] weight;	//ルール重み	(weight[全ルール数])
 
 	int h = 500;	//テストパターン刻み幅
 	double[][] test_X;	//テストパターン
 	int[] test_Class;	//テストパターン_識別結果
 	double[][][] testFit;	//テストパターン_適合度
 
-	double recogRate;	//識別率
-	double[][][] recogFit;	//識別率計算用
-	int[] recog_Class;		//識別率計算用	学習データ識別クラス
-	int ruleNumber;	//ルール数
-	int ruleLength;	//総ルール長
 
 	//constructor
 	Fuzzy(String inputPath, String outputPath){
@@ -48,7 +39,7 @@ public class Fuzzy {
 	}
 
 //ファイル読み込みメソッド
-	public static double[][] readFile(String path) throws IOException{
+	public double[][] readFile(String path) throws IOException{
 		List<String[]> list = new ArrayList<String[]>();
 		BufferedReader in = new BufferedReader(new FileReader(path));
 		String line;
@@ -66,7 +57,7 @@ public class Fuzzy {
 	}
 
 //メンバシップ関数
-	public static double memberShip(double x, int K, int k){	//This means the Fuzzy Set
+	public double memberShip(double x, int K, int k){	//This means the Fuzzy Set
 	//使い方
 	//	memberShip(x, ファジィ分割数, 選択するファジィ集合番号)
 	//k: 0=don't care, 1=small, 2=medium, 3=large;
@@ -81,8 +72,165 @@ public class Fuzzy {
 		}
 	}
 
-//推論メソッド
+//識別器メソッド
+/*
+ * 引数に渡されたデータセット X[データ数][次元数]の
+ * ファジィルールによる推論
+ * クラスの結果を result[データ数] の形でreturnする
+ *
+ * フラグ
+ * flg = 0 : ファジィルールの学習
+ * 			 return: ファジィルールの結論部
+ * flg = 1 : 入力データの推論
+ * 			 return: 入力データを推論して得たクラス結果
+ * */
+	public int[] classifier(double X[][], int flg) {
+//		// 計算用変数初期化
+		if(flg == 0) {
+			weight = new double[(int)Math.pow(K+1, n)];
+			result = new int[(int)Math.pow(K+1, n)];
+		}
+		// ローカル変数
+		double[][] fit = new double[X.length][(int)Math.pow(K+1, n)];
+		double[][] trust = new double[(int)Math.pow(K+1, n)][classNumber];
+		int[] class_ofX = new int[X.length];
+		double temp1,temp2,comp;
+		int comp_flg;
+		int ruleNumber;	//ルール数
+		int ruleLength;	//総ルール長
 
+		//適合度計算
+		for(int i=0; i < K+1; i++) {
+			for(int j=0; j < K+1; j++) {
+				if(flg != 0 && weight[i*(K+1) + j] <= 0) {	//識別の際、生成不可能ルールでは計算しない
+					continue;
+				}
+				for(int p=0; p < X.length; p++) {
+					fit[p][i*(K+1) + j] = 1.0;
+					for(int k=0; k < n; k++) {
+						if(k==0) {
+							fit[p][i*(K+1) + j] *= memberShip(X[p][k], K, i);
+						}
+						else {
+							fit[p][i*(K+1) + j] *= memberShip(X[p][k], K, j);
+						}
+					}
+				}
+			}
+		}
+		//信頼度計算
+		for(int i=0; i < K+1; i++) {
+			if(flg != 0) {
+				break;
+			}
+			for(int j=0; j < K+1; j++) {
+				for(int k=0; k < classNumber; k++) {
+					temp1 = 0.0;
+					temp2 = 0.0;
+					for(int p=0; p < m; p++) {
+						if(classof_x[p] == k) {
+							temp1 += fit[p][i*(K+1) + j];
+						}
+						temp2 += fit[p][i*(K+1) + j];
+					}
+					trust[i*(K+1) + j][k] = temp1/temp2;
+				}
+			}
+		}
+		//ルール結論部クラス決定
+		for(int i=0; i < K+1; i++) {
+			if(flg != 0) {
+				break;
+			}
+			for(int j=0; j < K+1; j++) {
+				result[i*(K+1) + j] = 0;
+				comp = trust[i*(K+1) + j][0];
+				for(int k=1; k < classNumber; k++) {
+					if(comp < trust[i*(K+1) + j][k]) {	//信頼度が一番大きいクラスを結論部として決定する
+						comp = trust[i*(K+1) + j][k];
+						result[i*(K+1) + j] = k;
+					}
+				}
+			}
+		}
+		//ルール重み計算
+		for(int i=0; i < K+1; i++) {
+			if(flg != 0) {
+				break;
+			}
+			for(int j=0; j < K+1; j++) {
+				temp1 = 0.0;
+				for(int k=0; k < classNumber; k++) {
+					if(result[i*(K+1) + j] != k) {
+						temp1 += trust[i*(K+1) + j][k];
+					}
+				}
+				weight[i*(K+1) + j] = trust[i*(K+1) + j][result[i*(K+1) + j]];
+				weight[i*(K+1) + j] -= temp1;
+			}
+		}
+
+		if(flg == 0) {	// 学習フラグ
+			//ルール数・総ルール長出力
+			ruleNumber = 0;
+			ruleLength = 0;
+			for(int i=0; i < K+1; i++) {
+				for(int j=0; j < K+1; j++) {
+					if(weight[i*(K+1) + j] > 0) {
+						ruleNumber++;
+						if(i != 0) {
+							ruleLength++;
+						}
+						if(j != 0) {
+							ruleLength++;
+						}
+					}
+				}
+			}
+			System.out.println("RuleNumber: " + ruleNumber);
+			System.out.println("RuleLength: " + ruleLength);
+			return result;
+		}
+		else {	//推論フラグ
+
+			// 適合度に重みを付与
+			for(int i=0; i < K+1; i++) {
+				for(int j=0; j < K+1; j++) {
+					if(weight[i*(K+1) + j] <= 0) {
+						continue;
+					}
+					for(int p=0; p < X.length; p++) {
+						fit[p][i*(K+1) + j] *= weight[i*(K+1) + j];
+
+					}
+				}
+			}
+			//推論クラス決定
+			for(int p=0; p < X.length; p++) {
+				comp_flg = 0;
+				comp = 0.0;
+				for(int i=0; i < K+1; i++) {
+					for(int j=0; j < K+1; j++) {
+						if(weight[i*(K+1) + j] <= 0) {	//生成不可能ルールでは計算しない
+							continue;
+						}
+						if(comp_flg == 0) {
+							comp_flg = 1;
+							comp = fit[p][i*(K+1) + j];
+							class_ofX[p] = result[i*(K+1) + j];
+						}else if(comp == fit[p][i*(K+1) + j]) {
+							class_ofX[p] = -1;	//識別不能パターン
+						}else if(comp < fit[p][i*(K+1) + j]) {
+							comp = fit[p][i*(K+1) + j];
+							class_ofX[p] = result[i*(K+1) + j];
+						}
+					}
+				}
+			}
+			return class_ofX;
+
+		}
+	}
 
 //fuzzyメソッド
 /*
@@ -113,192 +261,35 @@ public class Fuzzy {
 		}
 
 	//Fuzzy Rule 生成
-		ruleFit = new double[K+1][K+1][m];
-		ruleResult = new int[K+1][K+1];
-		trust = new double[K+1][K+1][classNumber];
-		ruleWeight = new double[K+1][K+1];
-		//適合度計算
-		for(int i=0; i < K+1; i++) {
-			for(int j=0; j < K+1; j++) {
-				for(int p=0; p < m; p++) {
-					ruleFit[i][j][p] = 1.0;
-					for(int k=0; k < n; k++) {
-						if(k==0) {
-							ruleFit[i][j][p] *= memberShip(x[p][k], K, i);
-						}
-						else {
-							ruleFit[i][j][p] *= memberShip(x[p][k], K, j);
-						}
-					}
-				}
-			}
-		}
-		//信頼度計算
-		for(int i=0; i < K+1; i++) {
-			for(int j=0; j < K+1; j++) {
-				for(int k=0; k < classNumber; k++) {
-					temp1 = 0.0;
-					temp2 = 0.0;
-					for(int p=0; p < m; p++) {
-						if(classof_x[p] == k) {
-							temp1 += ruleFit[i][j][p];
-						}
-						temp2 += ruleFit[i][j][p];
-					}
-					trust[i][j][k] = temp1/temp2;
-				}
-			}
-		}
-		//ルール結論部クラス決定
-		for(int i=0; i < K+1; i++) {
-			for(int j=0; j < K+1; j++) {
-				ruleResult[i][j] = 0;
-				comp = trust[i][j][0];
-				for(int k=1; k < classNumber; k++) {
-					if(comp < trust[i][j][k]) {	//信頼度が一番大きいクラスを結論部として決定する
-						comp = trust[i][j][k];
-						ruleResult[i][j] = k;
-					}
-				}
-			}
-		}
-		//ルール重み計算
-		for(int i=0; i < K+1; i++) {
-			for(int j=0; j < K+1; j++) {
-				temp1 = 0.0;
-				for(int k=0; k < classNumber; k++) {
-					if(ruleResult[i][j] != k) {
-						temp1 += trust[i][j][k];
-					}
-				}
-				ruleWeight[i][j] = trust[i][j][ruleResult[i][j]];
-				ruleWeight[i][j] -= temp1;
-			}
-		}
-		//ルール数出力
-		ruleNumber = 0;
-		ruleLength = 0;
-		for(int i=0; i < K+1; i++) {
-			for(int j=0; j < K+1; j++) {
-				if(ruleWeight[i][j] > 0) {
-					ruleNumber++;
-					if(i != 0) {
-						ruleLength++;
-					}
-					if(j != 0) {
-						ruleLength++;
-					}
-				}
-			}
-		}
+		System.out.println("Create Fuzzy Rule.");
+		classifier(x,0);	//Fuzzy Rule 生成
+		System.out.println("Created Fuzzy Rule.");
+
 		//識別率計算
-		recogRate = 0.0;
-			//適合度計算
-		recogFit = new double[m][K+1][K+1];
-		recog_Class = new int[m];
-		for(int i=0; i < K+1; i++) {
-			for(int j=0; j < K+1; j++) {
-				if(ruleWeight[i][j] <= 0) {	//生成不可能ルールでは計算しない
-					continue;
-				}
-				for(int p=0; p < m; p++) {
-					recogFit[p][i][j] = 1.0;
-					for(int k=0; k < n; k++) {
-						if(k==0) {
-							recogFit[p][i][j] *= memberShip(x[p][k], K, i);
-						}
-						else {
-							recogFit[p][i][j] *= memberShip(x[p][k], K, j);
-						}
-					}
-					recogFit[p][i][j] *= ruleWeight[i][j];
-				}
-			}
-		}
-			//推論クラス決定
-		for(int p=0; p < m; p++) {
-			comp_flg = 0;
-			comp = 0.0;
-			for(int i=0; i < K+1; i++) {
-				for(int j=0; j < K+1; j++) {
-					if(ruleWeight[i][j] <= 0) {	//生成不可能ルールでは計算しない
-						continue;
-					}
-					if(comp_flg == 0) {
-						comp_flg = 1;
-						comp = recogFit[p][i][j];
-						recog_Class[p] = ruleResult[i][j];
-					}else if(comp == recogFit[p][i][j]) {
-						recog_Class[p] = -1;	//識別不能パターン
-					}else if(comp < recogFit[p][i][j]) {
-						comp = recogFit[p][i][j];
-						recog_Class[p] = ruleResult[i][j];
-					}
-				}
-			}
-		}
+		double recogRate = 0.0;
+		int[] recog_Class = classifier(x, 1);		//識別率計算用	学習データ識別クラス
 		for(int p=0; p < m; p++) {
 			if(classof_x[p] == recog_Class[p]) {
 				recogRate++;
 			}
 		}
-		System.out.println("recogRate: " + recogRate/m *100);
-		System.out.println("ruleNumber: " + ruleNumber);
-		System.out.println("ruleLength: " + ruleLength);
+
+		System.out.println("RecogRate: " + recogRate/m *100);
+
 
 	//未知パターン推論
+		//テストパターン生成
 		test_X = new double[h*h][n];
 		test_Class = new int[h*h];
 		testFit = new double[h*h][K+1][K+1];
-		//テストパターン生成
 		for(int i=0; i<h; i++) {
 			for(int j=0; j<h; j++) {//走査方向 : 縦
 				test_X[i*h+j][0] = (double)i/h;
 				test_X[i*h+j][1] = (double)j/h;
 			}
 		}
-		//適合度計算
-		for(int i=0; i < K+1; i++) {
-			for(int j=0; j < K+1; j++) {
-				if(ruleWeight[i][j] <= 0) {	//生成不可能ルールでは計算しない
-					continue;
-				}
-				for(int p=0; p < h*h; p++) {
-					testFit[p][i][j] = 1.0;
-					for(int k=0; k < n; k++) {
-						if(k==0) {
-							testFit[p][i][j] *= memberShip(test_X[p][k], K, i);
-						}
-						else {
-							testFit[p][i][j] *= memberShip(test_X[p][k], K, j);
-						}
-					}
-					testFit[p][i][j] *= ruleWeight[i][j];
-				}
-			}
-		}
-		//推論クラス決定
-		for(int p=0; p < h*h; p++) {
-			comp_flg = 0;
-			comp = 0.0;
-			for(int i=0; i < K+1; i++) {
-				for(int j=0; j < K+1; j++) {
-					if(ruleWeight[i][j] <= 0) {	//生成不可能ルールでは計算しない
-						continue;
-					}
-					if(comp_flg == 0) {
-						comp_flg = 1;
-						comp = testFit[p][i][j];
-						test_Class[p] = ruleResult[i][j];
-					}else if(comp == testFit[p][i][j]) {
-						test_Class[p] = -1;	//識別不能パターン
-					}else if(comp < testFit[p][i][j]) {
-						comp = testFit[p][i][j];
-						test_Class[p] = ruleResult[i][j];
-					}
-				}
-			}
-		}
+		//テストパターン推論
+		test_Class = classifier(test_X, 1);
 
 	//境界点書き出し
 		//境界点 書き出し

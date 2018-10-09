@@ -24,8 +24,13 @@ public class Main {
 
 		Fuzzy f_ex1 = new Fuzzy(inputPath_1, borderPath_1);
 		Fuzzy f_ex2 = new Fuzzy(inputPath_2, borderPath_2);
+
+		System.out.println("-----例題 1-----");
 		f_ex1.fuzzy();
+		System.out.println("");
+		System.out.println("-----例題 2-----");
 		f_ex2.fuzzy();
+		System.out.println("");
 	}
 
 }
