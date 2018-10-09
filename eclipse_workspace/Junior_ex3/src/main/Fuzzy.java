@@ -35,6 +35,8 @@ public class Fuzzy {
 	double[][][] testFit;	//テストパターン_適合度
 
 	double recogRate;	//識別率
+	double[][][] recogFit;	//識別率計算用
+	int[] recog_Class;		//識別率計算用	学習データ識別クラス
 	int ruleNumber;	//ルール数
 	int ruleLength;	//総ルール長
 
@@ -78,6 +80,9 @@ public class Fuzzy {
 			return Math.max( 1 - Math.abs(a - x)/b , 0.0);
 		}
 	}
+
+//推論メソッド
+
 
 //fuzzyメソッド
 /*
@@ -186,8 +191,60 @@ public class Fuzzy {
 				}
 			}
 		}
-		System.out.println("ruleNumber: "+ruleNumber);
-		System.out.println("ruleLength: "+ruleLength);
+		//識別率計算
+		recogRate = 0.0;
+			//適合度計算
+		recogFit = new double[m][K+1][K+1];
+		recog_Class = new int[m];
+		for(int i=0; i < K+1; i++) {
+			for(int j=0; j < K+1; j++) {
+				if(ruleWeight[i][j] <= 0) {	//生成不可能ルールでは計算しない
+					continue;
+				}
+				for(int p=0; p < m; p++) {
+					recogFit[p][i][j] = 1.0;
+					for(int k=0; k < n; k++) {
+						if(k==0) {
+							recogFit[p][i][j] *= memberShip(x[p][k], K, i);
+						}
+						else {
+							recogFit[p][i][j] *= memberShip(x[p][k], K, j);
+						}
+					}
+					recogFit[p][i][j] *= ruleWeight[i][j];
+				}
+			}
+		}
+			//推論クラス決定
+		for(int p=0; p < m; p++) {
+			comp_flg = 0;
+			comp = 0.0;
+			for(int i=0; i < K+1; i++) {
+				for(int j=0; j < K+1; j++) {
+					if(ruleWeight[i][j] <= 0) {	//生成不可能ルールでは計算しない
+						continue;
+					}
+					if(comp_flg == 0) {
+						comp_flg = 1;
+						comp = recogFit[p][i][j];
+						recog_Class[p] = ruleResult[i][j];
+					}else if(comp == recogFit[p][i][j]) {
+						recog_Class[p] = -1;	//識別不能パターン
+					}else if(comp < recogFit[p][i][j]) {
+						comp = recogFit[p][i][j];
+						recog_Class[p] = ruleResult[i][j];
+					}
+				}
+			}
+		}
+		for(int p=0; p < m; p++) {
+			if(classof_x[p] == recog_Class[p]) {
+				recogRate++;
+			}
+		}
+		System.out.println("recogRate: " + recogRate/m *100);
+		System.out.println("ruleNumber: " + ruleNumber);
+		System.out.println("ruleLength: " + ruleLength);
 
 	//未知パターン推論
 		test_X = new double[h*h][n];
