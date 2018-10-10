@@ -360,18 +360,18 @@ public class Fuzzy {
 		writeFile(optimisationPath);
 
 	//選択ルール出力
-//		String ruleLabel[] = {"don't care", "small", "medium", "large"};
-//		System.out.println("---------------------------");
-//		for(int i=0; i < ruleFlg.length; i++) {
-//			if(ruleFlg[i] == 0) {	//選択されていなければ出力しない
-//				continue;
-//			}
-//			System.out.print("If x_1 is " + ruleLabel[i / K+1] + " and ");
-//			System.out.print("x_1 is " + ruleLabel[i % K+1] + " then ");
-//			System.out.println("Class " + (result[i]+1));
-//		}
-//		System.out.println("---------------------------");
-//		System.out.println("");
+		String ruleLabel[] = {"don't care", "small", "medium", "large"};
+		System.out.println("---------------------------");
+		for(int i=0; i < ruleFlg.length; i++) {
+			if(ruleFlg[i] == 0) {	//選択されていなければ出力しない
+				continue;
+			}
+			System.out.print("If x_1 is " + ruleLabel[i / (K+1)] + " and ");
+			System.out.print("x_1 is " + ruleLabel[i % (K+1)] + " then ");
+			System.out.println("Class " + (result[i]+1));
+		}
+		System.out.println("---------------------------");
+		System.out.println("");
 	}
 
 	//ルール最適化メソッド
