@@ -354,10 +354,24 @@ public class Fuzzy {
 		System.out.println("RecogRate: " + recogRate/m *100);
 		System.out.println("RuleNumber: " + ruleNumber);
 		System.out.println("RuleLength: " + ruleLength);
+		System.out.println("");
 		//境界点書き込み
 		test_Class = classifier(test_X, 1);
 		writeFile(optimisationPath);
 
+	//選択ルール出力
+//		String ruleLabel[] = {"don't care", "small", "medium", "large"};
+//		System.out.println("---------------------------");
+//		for(int i=0; i < ruleFlg.length; i++) {
+//			if(ruleFlg[i] == 0) {	//選択されていなければ出力しない
+//				continue;
+//			}
+//			System.out.print("If x_1 is " + ruleLabel[i / K+1] + " and ");
+//			System.out.print("x_1 is " + ruleLabel[i % K+1] + " then ");
+//			System.out.println("Class " + (result[i]+1));
+//		}
+//		System.out.println("---------------------------");
+//		System.out.println("");
 	}
 
 	//ルール最適化メソッド
