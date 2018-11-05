@@ -41,6 +41,7 @@ public class Fuzzy {
 
 	//constructor
 	Fuzzy(String inputPath, String borderPath, String optimisationPath) {
+//	Fuzzy(String inputPath) {
 		this.inputPath = inputPath;
 		this.borderPath = borderPath;
 		this.optimisationPath = optimisationPath;
@@ -353,7 +354,7 @@ public class Fuzzy {
 		test_Class = classifier(test_X, 1);
 		writeFile(optimisationPath);
 
-<<<<<<< HEAD
+
 		//選択ルール出力
 		//		String ruleLabel[] = {"don't care", "small", "medium", "large"};
 		//		System.out.println("---------------------------");
@@ -367,7 +368,7 @@ public class Fuzzy {
 		//		}
 		//		System.out.println("---------------------------");
 		//		System.out.println("");
-=======
+
 	//選択ルール出力
 		String ruleLabel[] = {"don't care", "small", "medium", "large"};
 		System.out.println("---------------------------");
@@ -376,12 +377,12 @@ public class Fuzzy {
 				continue;
 			}
 			System.out.print("If x_1 is " + ruleLabel[i / (K+1)] + " and ");
-			System.out.print("x_1 is " + ruleLabel[i % (K+1)] + " then ");
+			System.out.print("x_2 is " + ruleLabel[i % (K+1)] + " then ");
 			System.out.println("Class " + (result[i]+1));
 		}
 		System.out.println("---------------------------");
 		System.out.println("");
->>>>>>> 868a5aea8d6357af7cf1dea2994188eb703b44da
+
 	}
 
 	//ルール最適化メソッド
