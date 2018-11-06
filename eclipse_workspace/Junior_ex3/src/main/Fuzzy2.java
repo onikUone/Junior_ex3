@@ -88,13 +88,16 @@ public class Fuzzy2 {
 	}
 
 	//未知パターン推論
-	public static int reasoning(double[] x, Rule[] rule) {
+	public static int reasoning(double[] x, Rule[] rule, int[] _ruleFlg) {
 		int flg = 0;
 		int maxRuleIndex = -1;
 		double max = 0;
 		double comp = 0;
 		for(int i = 0; i < rule.length; i++) {
 			if(rule[i].trust <= 0.5) {
+				continue;
+			}
+			if(_ruleFlg[i] == 0) {
 				continue;
 			}
 			if(flg == 0) {
@@ -125,6 +128,10 @@ public class Fuzzy2 {
 		}
 	}
 
+	public static void getClassifier(Rule[] _rule) {
+
+
+	}
 	//ルール最適化メソッド
 	public void optimisation() {
 		double comp = 0.0;
@@ -176,6 +183,7 @@ public class Fuzzy2 {
 		readFile(path);
 		//ルール個体生成 全探索のため全組み合わせの個体生成
 		rule = new Rule[(int) Math.pow(n_rule + 1, attribute)];
+		ruleFlg = new int[rule.length];
 		int[] setRule = new int[attribute];
 		int index = 0;
 		for(int i = 0; i < n_rule + 1; i++) {
