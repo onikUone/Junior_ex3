@@ -18,6 +18,8 @@ public class Sketch extends PApplet {
 		try {
 			Fuzzy2 f_ex1 = new Fuzzy2(inputPath1);
 			drawDataset(f_ex1);
+			int[] ruleFlg = f_ex1.optimisation();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
