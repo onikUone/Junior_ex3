@@ -26,7 +26,7 @@ public class Main {
 		System.out.println("");
 		System.out.println("-----例題 2-----");
 		f_ex2.fuzzy();
-		System.out.println("");
+		System.out.println("End.");
 	}
 
 }
