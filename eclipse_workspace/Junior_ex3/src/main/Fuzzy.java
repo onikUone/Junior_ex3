@@ -45,7 +45,9 @@ public class Fuzzy {
 		this.inputPath = inputPath;
 		this.borderPath = borderPath;
 		this.optimisationPath = optimisationPath;
-
+	}
+	Fuzzy(String _inputPath){
+		this.inputPath = _inputPath;
 	}
 
 	//ファイル読み込みメソッド
@@ -53,15 +55,21 @@ public class Fuzzy {
 		List<String[]> list = new ArrayList<String[]>();
 		BufferedReader in = new BufferedReader(new FileReader(path));
 		String line;
+		line = in.readLine();
+		this.m = Integer.parseInt(line.split(", ")[0]);
+		this.n = Integer.parseInt(line.split(", ")[1]);
+		this.classNumber = Integer.parseInt(line.split(", ")[2]);
 		while ((line = in.readLine()) != null) {
 			list.add(line.split(", "));
 		}
 		in.close();
-		double[][] x = new double[list.size()][list.get(0).length];
-		for (int i = 0; i < list.size(); i++) {
-			for (int j = 0; j < x[i].length; j++) {
+		x = new double[m][n];
+		classof_x = new int[m];
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
 				x[i][j] = Double.parseDouble(list.get(i)[j]);
 			}
+			classof_x[i] = Integer.parseInt(list.get(i)[2]);
 		}
 		return x;
 	}
