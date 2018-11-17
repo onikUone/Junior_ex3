@@ -2,12 +2,6 @@ package main;
 
 import static main.FuzzySetTriangle.*;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 public class Fuzzy2 {
 
 	int attribute; //学習データの属性数
@@ -29,27 +23,27 @@ public class Fuzzy2 {
 	double recogRate;
 
 	//ファイル読み込みメソッド
-	public void readFile(String path) throws IOException {
-		List<String[]> list = new ArrayList<String[]>();
-		BufferedReader in = new BufferedReader(new FileReader(path));
-		String line;
-		line = in.readLine();
-		this.pattern = Integer.parseInt(line.split(", ")[0]);
-		this.attribute = Integer.parseInt(line.split(", ")[1]);
-		this.classes = Integer.parseInt(line.split(", ")[2]);
-		x = new double[pattern][attribute];
-		y = new int[pattern];
-		while ((line = in.readLine()) != null) {
-			list.add(line.split(", "));
-		}
-		in.close();
-		for (int i = 0; i < pattern; i++) {
-			for (int j = 0; j < attribute; j++) {
-				x[i][j] = Double.parseDouble(list.get(i)[j]);
-			}
-			y[i] = Integer.parseInt(list.get(i)[attribute]);
-		}
-	}
+//	public void readFile(String path) throws IOException {
+//		List<String[]> list = new ArrayList<String[]>();
+//		BufferedReader in = new BufferedReader(new FileReader(path));
+//		String line;
+//		line = in.readLine();
+//		this.pattern = Integer.parseInt(line.split(", ")[0]);
+//		this.attribute = Integer.parseInt(line.split(", ")[1]);
+//		this.classes = Integer.parseInt(line.split(", ")[2]);
+//		x = new double[pattern][attribute];
+//		y = new int[pattern];
+//		while ((line = in.readLine()) != null) {
+//			list.add(line.split(", "));
+//		}
+//		in.close();
+//		for (int i = 0; i < pattern; i++) {
+//			for (int j = 0; j < attribute; j++) {
+//				x[i][j] = Double.parseDouble(list.get(i)[j]);
+//			}
+//			y[i] = Integer.parseInt(list.get(i)[attribute]);
+//		}
+//	}
 
 	//memberShip function
 	public static double memberShip(double x, int myFuzzySetNum, int division) {
@@ -208,20 +202,24 @@ public class Fuzzy2 {
 	}
 
 	//constractor
-	Fuzzy2(String path) throws IOException {
-		readFile(path);
+	Fuzzy2(Sketch _s){
+		this.pattern = _s.pattern;
+		this.attribute = _s.attribute;
+		this.classes = _s.classes;
+		this.x = _s.x;
+		this.y = _s.y;
 		//ルール個体生成 全探索のため全組み合わせの個体生成
-		rule = new Rule[(int) Math.pow(n_rule + 1, attribute)];
-		ruleFlg = new int[rule.length];
-		int[] setRule = new int[attribute];
-		int index = 0;
-		for (int i = 0; i < n_rule + 1; i++) {
-			for (int j = 0; j < n_rule + 1; j++) {
-				setRule[0] = i;
-				setRule[1] = j;
-				rule[index] = new Rule(setRule, this);
-				index++;
-			}
-		}
+//		rule = new Rule[(int) Math.pow(n_rule + 1, attribute)];
+//		ruleFlg = new int[rule.length];
+//		int[] setRule = new int[attribute];
+//		int index = 0;
+//		for (int i = 0; i < n_rule + 1; i++) {
+//			for (int j = 0; j < n_rule + 1; j++) {
+//				setRule[0] = i;
+//				setRule[1] = j;
+//				rule[index] = new Rule(setRule, this);
+//				index++;
+//			}
+//		}
 	}
 }

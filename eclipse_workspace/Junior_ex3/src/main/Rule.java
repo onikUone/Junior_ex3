@@ -53,10 +53,10 @@ public class Rule {
 	//constractor
 	Rule(int[] rule, Fuzzy2 f) {
 		this.rule = new int[f.attribute];
-		this.fitness = 0;
 		for(int i=0; i<f.attribute; i++) {
 			this.rule[i] = rule[i];
 		}
+		this.fitness = 0;
 		decideMyClass(f.x, f.y, f.classes);
 		calcMyWeight(f.x, f.y, f.classes);
 	}
