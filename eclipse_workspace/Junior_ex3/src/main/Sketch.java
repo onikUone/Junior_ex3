@@ -42,7 +42,7 @@ public class Sketch extends PApplet {
 		String inputPath1 = "src/kadai3_pattern1.txt";
 		String inputPath2 = "src/kadai3_pattern2.txt";
 
-		read(inputPath2);
+		read(inputPath1);
 		Fuzzy2 f = new Fuzzy2(this);
 		FuzzyController fc = new FuzzyController(f, this);
 		int[] ruleFlg = new int[16];
@@ -166,8 +166,8 @@ public class Sketch extends PApplet {
 		int[] test_Y = new int[h * h];
 		for (int i = 0; i < h; i++) {
 			for (int j = 0; j < h; j++) {
-				test_X[i * h + j][0] = (double) j / h;
-				test_X[i * h + j][1] = (double) i / h;
+				test_X[i * h + j][0] = (double) i / h;
+				test_X[i * h + j][1] = (double) j / h;
 			}
 		}
 		for (int i = 0; i < test_X.length; i++) {
