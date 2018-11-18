@@ -26,9 +26,9 @@ public class Sketch extends PApplet {
 
 		for (int i = 0; i < pattern; i++) {
 			for (int j = 0; j < attribute; j++) {
-				x[i][j] = Double.parseDouble(line[i].split(", ")[j]);
+				x[i][j] = Double.parseDouble(line[i + 1].split(", ")[j]);
 			}
-			y[i] = Integer.parseInt(line[i].split(", ")[attribute]);
+			y[i] = Integer.parseInt(line[i + 1].split(", ")[attribute]);
 		}
 
 	}
@@ -42,22 +42,40 @@ public class Sketch extends PApplet {
 		String inputPath1 = "src/kadai3_pattern1.txt";
 		String inputPath2 = "src/kadai3_pattern2.txt";
 
-		read(inputPath1);
+		read(inputPath2);
 		Fuzzy2 f = new Fuzzy2(this);
 		FuzzyController fc = new FuzzyController(f, this);
 		int[] ruleFlg = new int[16];
 		for (int i = 0; i < 16; i++) {
 			ruleFlg[i] = 1;
 		}
-		double recogRate;
+		detail(fc, ruleFlg);
+		drawBorder(fc, ruleFlg);
+		drawDataset(f);
+	}
+
+	public void draw() {
+
+	}
+
+	public void detail(FuzzyController _fc, int[] _ruleFlg) {
+		double recogRate = 0;
+		for(int i = 0; i < pattern; i++) {
+			if(y[i] == _fc.reasoning(x[i], _ruleFlg)) {
+				recogRate++;
+			}
+//			else {
+//				System.out.println("識別不能 : " + i + " y = " + y[i] + " , 推論: " + _fc.reasoning(x[i], _ruleFlg));
+//			}
+		}
 		int ruleNumber = 0;
 		int ruleLength = 0;
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
-				if (ruleFlg[i * 4 + j] == 0) { //選択されたルールでないならば計算しない
+				if (_ruleFlg[i * 4 + j] == 0) { //選択されたルールでないならば計算しない
 					continue;
 				}
-				if (fc.rules[i*4+j].weight > 0) {
+				if (_fc.rules[i*4+j].weight > 0) {
 					ruleNumber++;
 					if (i != 0) {
 						ruleLength++;
@@ -68,15 +86,9 @@ public class Sketch extends PApplet {
 				}
 			}
 		}
+		System.out.println("識別率： " + (recogRate / pattern * 100));
 		System.out.println("ルール数： " + ruleNumber);
 		System.out.println("総ルール長： " + ruleLength);
-		drawBorder(fc, ruleFlg);
-		drawAxis();
-		drawDataset(f);
-	}
-
-	public void draw() {
-
 	}
 
 	public void drawAxis() {

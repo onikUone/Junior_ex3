@@ -56,12 +56,13 @@ public class FuzzyController {
 		double comp = 0;
 
 		for(int ruleIndex = 0; ruleIndex < rules.length; ruleIndex++) {
-			if(rules[ruleIndex].trust <= 0.5) {
-				flg = -1;
+			if(rules[ruleIndex].weight <= 0) {
+				if(flg == 0) {
+					flg = -1;
+				}
 				continue;
 			}
 			if(_ruleFlg[ruleIndex] == 0) {
-				flg = -1;
 				continue;
 			}
 			if(maxRuleIndex == -1) {
@@ -75,6 +76,7 @@ public class FuzzyController {
 						flg = -1;
 						continue;
 					}
+					flg = 1;
 				}
 				if(comp > max) {
 					max = comp;
