@@ -47,6 +47,8 @@ public class FuzzyController {
 				index++;
 			}
 		}
+		f.rule = rules;
+		f.setFC(this);
 	}
 
 	public int reasoning(double[] _x, int[] _ruleFlg) {
@@ -91,6 +93,7 @@ public class FuzzyController {
 			return rules[maxRuleIndex].myClass;
 		}
 	}
+
 
 	//constractor
 	FuzzyController(Fuzzy2 _f, Sketch _s){

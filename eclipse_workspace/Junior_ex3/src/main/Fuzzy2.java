@@ -21,6 +21,7 @@ public class Fuzzy2 {
 	int ruleNumber;
 	int ruleLength;
 	double recogRate;
+	FuzzyController fc;
 
 	//ファイル読み込みメソッド
 //	public void readFile(String path) throws IOException {
@@ -87,7 +88,7 @@ public class Fuzzy2 {
 		double max = 0;
 		double comp = 0;
 		//推論開始
-		for (int i = 0; i < rule.length; i++) {
+		for (int i = 0; i < _ruleFlg.length; i++) {
 			if (rule[i].trust <= 0.5) {
 				flg = -1;
 				continue;
@@ -129,6 +130,7 @@ public class Fuzzy2 {
 		int optimumIndex = -1;
 		double fitness;
 		String binary;
+		int[] ruleFlg = new int[(int)Math.pow(n_rule + 1, attribute)];
 		//加重和適応度関数の全探索
 		for (int i = 0; i < combination; i++) {
 			binary = String.format("%016d", Long.parseLong(Integer.toBinaryString(i)));
@@ -139,7 +141,8 @@ public class Fuzzy2 {
 			ruleNumber = 0;
 			ruleLength = 0;
 			recogRate = 0;
-			for(int j = 0; j < rule.length; j++) {
+			fitness = 0;
+			for(int j = 0; j < ruleFlg.length; j++) {
 				if(ruleFlg[j] == 0) {
 					continue;
 				}
@@ -153,12 +156,11 @@ public class Fuzzy2 {
 				}
 			}
 			for(int p = 0; p < pattern; p++) {
-				if(y[p] == reasoning(x[p], ruleFlg)) {
+				if(y[p] == fc.reasoning(x[p], ruleFlg)) {
 					recogRate++;
 				}
 			}
-			recogRate /= pattern;
-			fitness = 10 * (recogRate / pattern * 100) - 1 * ruleNumber - 1 * ruleLength;
+			fitness = 10 * (recogRate / (double)pattern * 100) - ruleNumber - ruleLength;
 			if(i == 0) {
 				comp = fitness;
 				optimumIndex = i;
@@ -172,33 +174,14 @@ public class Fuzzy2 {
 		binary = String.format("%016d", Long.parseLong(Integer.toBinaryString(optimumIndex)));
 		for (int i = 0; i < (int) Math.pow(n_rule + 1, attribute); i++) {
 			ruleFlg[i] = Character.getNumericValue(binary.charAt(i));
-			System.out.print(ruleFlg[i] + " ");
+//			System.out.print(ruleFlg[i] + " ");
 		}
-		System.out.println("");
-		ruleNumber = 0;
-		ruleLength = 0;
-		recogRate = 0;
-		for(int i = 0; i < rule.length; i++) {
-			if(ruleFlg[i] == 0) {
-				continue;
-			}
-			ruleNumber++;
-			for(int j = 0; j < attribute; j++) {
-				if(rule[i].rule[j] != 0) {
-					ruleLength++;
-				}
-			}
-		}
-		for(int p = 0; p < pattern; p++) {
-			if(y[p] == reasoning(x[p], ruleFlg)) {
-				recogRate++;
-			}
-		}
-		System.out.println("RecogRate: " + recogRate / pattern * 100);
-		System.out.println("RuleNumber: " + ruleNumber);
-		System.out.println("RuleLength: " + ruleLength);
-		System.out.println("");
+//		System.out.println("");
 		return ruleFlg;
+	}
+
+	public void setFC(FuzzyController _fc) {
+		this.fc = _fc;
 	}
 
 	//constractor

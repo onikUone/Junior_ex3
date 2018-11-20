@@ -49,9 +49,13 @@ public class Sketch extends PApplet {
 		for (int i = 0; i < 16; i++) {
 			ruleFlg[i] = 1;
 		}
+		//最適ルールフラグ
+		ruleFlg = f.optimisation();
+		System.out.println("");
 		detail(fc, ruleFlg);
-		drawBorder(fc, ruleFlg);
+		drawArea(fc, ruleFlg);
 		drawDataset(f);
+		save("src/ex2_optimum.png");
 	}
 
 	public void draw() {
@@ -86,7 +90,7 @@ public class Sketch extends PApplet {
 				}
 			}
 		}
-		System.out.println("識別率： " + (recogRate / pattern * 100));
+		System.out.println("識別率： " + String.format("%.2f", recogRate / pattern * 100));
 		System.out.println("ルール数： " + ruleNumber);
 		System.out.println("総ルール長： " + ruleLength);
 	}
@@ -149,6 +153,7 @@ public class Sketch extends PApplet {
 		for (int p = 0; p < pattern; p++) {
 			if (_f.y[p] == 0) {
 				stroke(0);
+				strokeWeight(2);
 				fill(255, 0, 0);
 				ellipse((float) _f.x[p][0] * limit + zero,
 						height - ((float) _f.x[p][1] * limit + zero),
@@ -156,13 +161,15 @@ public class Sketch extends PApplet {
 			}
 			if (_f.y[p] == 1) {
 				stroke(0);
-				fill(0, 0, 255);
+				strokeWeight(2);
+				fill(0, 119, 255);
 				ellipse((float) _f.x[p][0] * limit + zero,
 						height - ((float) _f.x[p][1] * limit + zero),
 						10, 10);
 			}
 			if (_f.y[p] == 2) {
 				stroke(0);
+				strokeWeight(2);
 				fill(0, 255, 0);
 				ellipse((float) _f.x[p][0] * limit + zero,
 						height - ((float) _f.x[p][1] * limit + zero),
@@ -171,7 +178,7 @@ public class Sketch extends PApplet {
 		}
 	}
 
-	public void drawBorder(FuzzyController _fc, int[] _ruleFlg) {
+	public void drawArea(FuzzyController _fc, int[] _ruleFlg) {
 		//テストパターン生成
 		int h = 500;
 		double[][] test_X = new double[h * h][attribute];
@@ -185,19 +192,23 @@ public class Sketch extends PApplet {
 		for (int i = 0; i < test_X.length; i++) {
 			test_Y[i] = _fc.reasoning(test_X[i], _ruleFlg);
 			if (test_Y[i] == 0) {
-				stroke(255, 0, 0);
+				stroke(255, 107, 102);
+				strokeWeight(1);
 				point((float) (test_X[i][0] * limit + zero), height - (float) (test_X[i][1] * limit + zero));
 			}
 			if (test_Y[i] == 1) {
-				stroke(0, 0, 255);
+				stroke(102, 173, 255);
+				strokeWeight(1);
 				point((float) (test_X[i][0] * limit + zero), height - (float) (test_X[i][1] * limit + zero));
 			}
 			if (test_Y[i] == 2) {
-				stroke(0, 255, 0);
+				stroke(128, 255, 132);
+				strokeWeight(1);
 				point((float) (test_X[i][0] * limit + zero), height - (float) (test_X[i][1] * limit + zero));
 			}
 			if (test_Y[i] == -1) {
 				stroke(0);
+				strokeWeight(1);
 				point((float) (test_X[i][0] * limit + zero), height - (float) (test_X[i][1] * limit + zero));
 			}
 		}
